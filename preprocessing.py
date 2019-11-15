@@ -1,11 +1,19 @@
 import pandas as pd
 import os
+import argparse
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 from tqdm import tqdm
+import pickle
 #nltk.download('wordnet')
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--data_name', type = str, help = 'dataset name', default = 'dataset')
+args = parser.parse_args()
+
 
 DATA_PATH = './ag_news_csv'
 
@@ -34,15 +42,15 @@ def ngram(tokens, N=2):
     return ngram
 
 
-text = train_data.at[3, 'desc']
-
-
 train_X, train_Y = [], []
 test_X, test_Y = [], []
 
-for i, row in tqdm(train_data.head(100).iterrows()):
+for i, row in tqdm(train_data.iterrows()):
     tokens = tokenize(row.title) + ngram(tokenize(row.title)) + tokenize(row.desc) + ngram(tokenize(row.desc))
     train_X.append(tokens)
     train_Y.append(row['class'])
 
+dataDict = {'train_X': train_X, 'train_Y': train_Y, 'test_X': test_X, 'test_Y': train_Y}
 
+file_name = args.data_name + '.pickle'
+pickle.dump(dataDict, open(os.path.join('data', file_name), 'wb'))
